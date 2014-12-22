@@ -15,7 +15,7 @@ User.add({
     cellPhone: {type: Types.Number},
     vcoinID: {type: Types.Text, label: "vCoin Account UUID"},
     customization: {type: Types.Color},
-    website: {type: String, label: "vCoin Account UUID"}
+    website: {type: String, label: "website URL"}
 }, 'Notification', {
     notifications: {
         posts: {type: String},
