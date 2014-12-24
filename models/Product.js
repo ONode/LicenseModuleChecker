@@ -7,7 +7,9 @@ var keystone = require('keystone'),
     Types = keystone.Field.Types;
 
 var Product = new keystone.List('Product', {
-    autokey: {from: 'name', path: 'key', unique: true}
+    autokey: {path: 'slug', from: '_id', unique: true},
+    map: {name: 'name'},
+    defaultSort: '-createdAt'
 });
 
 var current_date = (new Date()).valueOf().toString();
@@ -17,27 +19,27 @@ var h2 = crypto.createHash('sha1').update(current_date + random + "1").digest('h
 
 Product.add({
         name: {type: String, required: true, initial: true},
-        publishedDate: {type: Types.Date}
+        publishedDate: {type: Types.Date, noedit: true}
     },
     'Inventory', {
         limitEdition: {type: Boolean, default: false},
-        stock: {type: Types.Number, default: 0, label: 'the total stock in extension'}
+        stock: {type: Types.Number, format: false, label: 'the total stock in extension'}
         // extension: {type: Types.nested, noEdit: true}
     },
     'Version', {
         ver: {type: String, default: '0.0.1'},
-        releaseDate: {type: Types.Date, noEdit: true}
+        releaseDate: {type: Types.Date, noedit: true}
     }
 );
-Product.relationship({ref: 'License', path: 'licensedproducts'});
+//Product.relationship({ref: 'License', path: 'products'});
 Product.defaultColumns = 'name|50%, ver|10%, releaseDate|20%, stock|20%';
 Product.schema.pre('save', function (next) {
-    if (this.isModified('ver') && this.isPublished() && !this.createdAt) {
+    if (this.isModified('ver') || !this.releaseDate) {
         this.releaseDate = new Date();
     }
-    if (this.isPublished() && !this.publishedDate) {
-        this.publishedDate = new Date();
-    }
+    /*if (this.isPublished() && !this.publishedDate) {
+     this.publishedDate = new Date();
+     }*/
     /* if (this. == "") {
      this.createdAt = new Date();
      this.key = crypto.createHash('md5').update(value.toLowerCase().trim()).digest('hex');

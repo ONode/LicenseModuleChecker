@@ -48,8 +48,8 @@ exports = module.exports = function (app) {
 
     app.get('/download/users', routes.download.users);
     app.post('/api/register/addjob', routes.api_register.addjob);
-    app.post('/api/license/checklicense', routes.license.checklicense);
-
+    app.post('/api/license/check', routes.license.check);
+    app.post('/api/license/registration', routes.license.registration);
     // app.all('/api/me/register', routes.api.register); dsfsdf
     // NOTE: To protect a route so that only admins can see it, use the requireUser middleware:
     // app.get('/protected', middleware.requireUser, routes.views.protected);

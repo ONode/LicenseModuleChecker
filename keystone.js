@@ -3,13 +3,15 @@
 require('dotenv').load();
 
 // Require keystone
-var keystone = require('keystone'),
-    restyStone = require("resty-stone");
+var keystone = require('keystone');
+var restyStone = require("resty-stone")(keystone);
 // Initialise Keystone with your project's configuration.
 // See http://keystonejs.com/guide/config for available options
 // and documentation.
+
 keystone.init({
-    'name': 'license watcher',
+
+    'name': 'HkmInvention',
     'brand': 'HKM',
 
     'less': 'public',
@@ -24,7 +26,8 @@ keystone.init({
     'session': true,
     'auth': true,
     'user model': 'User',
-    'cookie secret': '4yA`pC]_G=x?r.M%252*fn}i.$jtyj^(&*($*@(*((#IcUZ(23i9+S79BA$g'
+    'cookie secret': '4yA`pC]_G=x?r.M%252*fn}i.$=aGsZE~{r~xX-dt!pQ;pOIcUZ(23i9+S79BA$g'
+
 });
 
 // Load your project's Models
@@ -45,6 +48,7 @@ keystone.set('locals', {
 keystone.set('routes', require('./routes'));
 // Setup common locals for your emails. The following are required by Keystone's
 // default email templates, you may remove them if you're using your own.
+
 keystone.set('email locals', {
     logo_src: '/images/logo-email.gif',
     logo_width: 194,
@@ -86,13 +90,16 @@ keystone.set('nav', {
     'users': 'users',
     'enquiries': 'enquiries',
     'pages': 'pages',
-    'licenses': 'licenses',
-    'product': 'product'
+    'printers': ['printers', 'countries', 'companies'],
+    'makers': 'makers',
+    'jobs': 'jobs',
+    'licenses': 'licenses'
 });
 
-keystone.set('resty api base address', "/api"); // you can omit this line, it is the same as the default and here for demo only.
-keystone.set('resty meta location', "./routes/api"); // provide the relative path from your project's root, to your Resource metadata folder.
-keystone.set('resty auth type', restyStone.AUTH_TYPE.TOKEN); // keep KeystoneJS cookie based session for auth (use in dev only!)
+
+keystone.set('resty api base address', "/api");
+keystone.set('resty meta location', "./models");
 keystone.set('resty token header', "api-token");
-// Start Keystone to connect to your database and initialise the web server
+
+
 keystone.start(restyStone.start());
