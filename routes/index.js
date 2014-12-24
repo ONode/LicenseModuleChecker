@@ -30,8 +30,7 @@ keystone.pre('render', middleware.flashMessages);
 // Import Route Controllers
 var routes = {
     views: importRoutes('./views'),
-    api_register: importRoutes('./api/register'),
-    license: importRoutes('./api/license'),
+    L: importRoutes('./api/license'),
     download: importRoutes('./download')
 };
 
@@ -45,38 +44,11 @@ exports = module.exports = function (app) {
     app.get('/gallery', routes.views.gallery);
     app.all('/contact', routes.views.contact);
 
-
     app.get('/download/users', routes.download.users);
-    app.post('/api/register/addjob', routes.api_register.addjob);
-    app.post('/api/license/check', routes.license.check);
-    app.post('/api/license/registration', routes.license.registration);
+    app.post('/api/license/check', routes.L.check);
+    app.post('/api/license/registration', routes.L.registration);
     // app.all('/api/me/register', routes.api.register); dsfsdf
     // NOTE: To protect a route so that only admins can see it, use the requireUser middleware:
     // app.get('/protected', middleware.requireUser, routes.views.protected);
-
-
-    // app.all('/me', routes.views.me);
-    // API
-    // app.all('/me*', middleware.requireUser);
-
-    // API - App
-    /*
-
-     app.all('/api/app/status', routes.api.app.status);
-     app.all('/api/app/rsvp', routes.api.app.rsvp);
-     app.all('/api/app/signin-email', routes.api.app['signin-email']);
-     app.all('/api/app/signup-email', routes.api.app['signup-email']);
-     app.all('/api/app/signin-service', routes.api.app['signin-service']);
-     app.all('/api/app/signin-service-check', routes.api.app['signin-service-check']);
-     app.all('/api/app/signin-recover', routes.api.app['signin-recover']);
-
-     */
-
-
-    // API
-    // app.get('/api*', keystone.initAPI);
-    // app.get('/api/me/profile', routes.api.me.profile);
-    // app.all('/api/stats', routes.api.stats);
-
 
 };

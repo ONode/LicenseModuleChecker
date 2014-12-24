@@ -7,6 +7,7 @@ var keystone = require('keystone'),
     License = keystone.list('License'),
     Product = keystone.list('Product'),
     utils = require('keystone-utils'),
+    crypto = require('crypto'),
     ObjectId = require('mongoose').Types.ObjectId
     ;
 
@@ -42,7 +43,38 @@ exports = module.exports = function (req, res) {
         });
         return Query;
     }
-
+    var genkey = function (length) {
+        if (length == -1) {
+            return crypto.createHash('sha1').update(current_date + random + "2").digest('hex');
+        } else {
+            return crypto.createHash('sha1').update(current_date + random + "2").digest('hex').substr(0, length);
+        }
+    }
+    var issueNewLicense = function (wwwSite, product_id, next) {
+        var newLicense = new License.model({
+            clientID: genkey(8),
+            siteURL: wwwSite,
+            product: new ObjectId(product_id),
+            createdAt: new Date().now(),
+            expire: new Date().now(),
+            brandingRemoval: false,
+            demoDisplay: true,
+            useExpiration: new Date().now(),
+            licenseStatusLive: true,
+            key: genkey(-1),
+            licenseHash: genkey(-1)
+        });
+        newLicense.save(function (err) {
+            if (err) {
+                console.log('[api.app.reg]  - Error saving new license.', err);
+                console.log('------------------------------------------------------------');
+                return next({message: 'Sorry, there was an error processing your account, please try again.'});
+            }
+            console.log('[api.app.reg]  - Saved new license registration.');
+            console.log('------------------------------------------------------------');
+        });
+        return newLicense;
+    }
     /**
      * async method run business logic
      */
@@ -98,46 +130,17 @@ exports = module.exports = function (req, res) {
                     }
 
                     if (!data) {
-                        console.log('[api.app.reg]  - Product not found...');
+                        console.log('[api.app.reg]  - License not found...');
                         console.log('------------------------------------------------------------');
-                        return next({message: 'License not found'});
+                        local.license = issueNewLicense(Q.domain, Q.product_key, next);
+                        license = _.extend(license, local.license._doc);
+                    } else {
+                        license = _.extend(license, data._doc);
+                        local.license = data;
                     }
-
-                    license = _.extend(license, data._doc);
-                    local.license = data;
 
                     return next();
                 });
-
-        },
-
-        function (next) {
-            try {
-
-                var time = new Date();
-                local.handle.checked = time.getTime();
-                local.handle.save(function (err, doc) {
-
-                    if (err) {
-                        return next({message: e.message});
-                    }
-
-                    if (doc) {
-
-                        console.log('[api.app.reg]  - result ..', doc);
-                        console.log('------------------------------------------------------------');
-
-                        return next();
-                    }
-
-
-                });
-
-
-            } catch (e) {
-                console.log('------------------------------------------------------------');
-                return next({message: e.message});
-            }
         },
         function (next) {
             return res.apiResponse({

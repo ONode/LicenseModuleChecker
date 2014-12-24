@@ -89,10 +89,7 @@ keystone.set('email tests', require('./routes/emails'));
 keystone.set('nav', {
     'users': 'users',
     'enquiries': 'enquiries',
-    'pages': 'pages',
-    'printers': ['printers', 'countries', 'companies'],
     'makers': 'makers',
-    'jobs': 'jobs',
     'licenses': 'licenses'
 });
 
