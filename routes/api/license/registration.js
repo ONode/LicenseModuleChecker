@@ -62,7 +62,8 @@ exports = module.exports = function (req, res) {
             useExpiration: new Date().now(),
             licenseStatusLive: true,
             key: genkey(-1),
-            licenseHash: genkey(-1)
+            licenseHash: genkey(-1),
+            checked: new Date().now()
         });
         newLicense.save(function (err) {
             if (err) {
@@ -155,7 +156,7 @@ exports = module.exports = function (req, res) {
             console.log('------------------------------------------------------------');
             return res.apiResponse({
                 success: false,
-                session: false,
+                timestamp: new Date().getTime(),
                 message: (err && err.message ? err.message : false) || 'Sorry, there was an error from verifying your product, please try again.'
             });
         }

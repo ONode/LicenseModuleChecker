@@ -23,15 +23,6 @@ exports = module.exports = function (req, res) {
         Q = {},
         local = {handle: false};
 
-
-    /*
-     var input_sufficiency = function (Qu) {
-     if (!Qu.domain) throw new Error('domain is missing');
-     if (!Qu.key) throw new Error('key is missing');
-     return Qu;
-     };
-
-     */
     /**
      *
      * @param Query
