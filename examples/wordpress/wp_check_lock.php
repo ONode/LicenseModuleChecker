@@ -34,7 +34,7 @@ function payload_implementation()
 class checker_key_pass
 {
     //Wordpress New System
-    const product_key = "____place_your_product_code___here_____";
+    const product_key = "549a85845ce8d96e32a75c9d";
     /**
      * DO NOT EDIT THE CODE FROM ANY POINT BELOW
      * @var string
@@ -51,7 +51,7 @@ class checker_key_pass
         $this->message = "no error";
         $this->order = 0;
         $this->domains = array(
-            "http://hesk.async777.com"
+            "http://async777.com:3000"
         );
         $this->limit = count($this->domains);
         if (!defined("KEY_SOURCE")) {
@@ -68,7 +68,8 @@ class checker_key_pass
      */
     private function getServerDomain($order)
     {
-        return $this->domains[$order];
+        print_r($order);
+        return $this->domains[$order++];
     }
 
     private function init_result($returned_json)
@@ -85,7 +86,7 @@ class checker_key_pass
     private function get_product_registration()
     {
         try {
-            $cb = $this->curl_post($this->getServerDomain($this->order) . "api/license/registration",
+            $cb = $this->curl_post($this->getServerDomain($this->order) . "/api/license/registration/",
                 array(
                     "domain" => $_SERVER["HTTP_HOST"],
                     "product_key" => self::product_key
@@ -93,7 +94,7 @@ class checker_key_pass
             $this->init_result($cb);
         } catch (Exception $e) {
             if ($this->limit > $this->order) {
-                $this->order++;
+                //  $this->order++;
                 $this->get_product_registration();
             } else {
                 throw $e;
@@ -109,7 +110,7 @@ class checker_key_pass
     {
         try {
 
-            $cb = $this->curl_post($this->getServerDomain($this->order) . "/api/license/check",
+            $cb = $this->curl_post($this->getServerDomain($this->order) . "/api/license/check/",
                 array(
                     "domain" => $_SERVER["HTTP_HOST"],
                     "key" => $this->key_source
@@ -152,7 +153,7 @@ class checker_key_pass
             // trigger_error(curl_error($ch));
             // self::outFail(19000 + curl_errno($ch), "CURL-curl_post error: " . curl_error($ch));
             //   inno_log_db::log_login_china_server_info(-1, 955, curl_error($ch), "-");
-            throw new Exception(curl_errno($ch), 19000);
+            throw new Exception("http connection setting: " . curl_errno($ch) . print_r(($options + $defaults), true), 19000);
         } else
             curl_close($ch);
         return $result;
@@ -212,5 +213,4 @@ if (!$instance->get_result_arr()) {
     define("LICENSE_FEATURE_BRAND_REMOVAL", $instance->brandingRemoval);
     define("LICENSE_FEATURE_DISPLAY_AS_DEMO", $instance->demoDisplay);
     add_action('wp_loaded', 'payload_implementation', 10);
-    $destinations = NULL;
 }

@@ -4,12 +4,11 @@
 
 var keystone = require('keystone'),
     crypto = require('crypto'),
-    Types = keystone.Field.Types;
-
-var License = new keystone.List('License', {
-    nocreate: false,
-    noedit: false
-});
+    Types = keystone.Field.Types,
+    License = new keystone.List('License', {
+        nocreate: false,
+        noedit: false
+    });
 
 var current_date = (new Date()).valueOf().toString();
 var random = Math.random().toString();
@@ -36,7 +35,7 @@ License.add({
 });
 License.defaultColumns = 'product|20%, licensePerson|20%, licenseStatusLive|20%, createdAt|30%';
 License.schema.pre('save', function (next) {
-    if (this.isModified('key') && this.isPublished() && !this.createdAt) {
+    if (this.isModified('key') && !this.createdAt) {
         this.createdAt = new Date();
     }
     /*  if (this. == "") {

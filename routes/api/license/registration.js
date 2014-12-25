@@ -14,12 +14,11 @@ var keystone = require('keystone'),
 exports = module.exports = function (req, res) {
     var product = {},
         license = {},
-        isError = false,
-        message = "",
         Q = {},
         local = {
             license: false,
-            product: false
+            product: false,
+            newissue: false
         };
 
 
@@ -44,56 +43,43 @@ exports = module.exports = function (req, res) {
         return Query;
     }
     var genkey = function (length) {
-        if (length == -1) {
+        var current_date = (new Date()).valueOf().toString();
+        var random = Math.random().toString();
+        if (length === -1) {
             return crypto.createHash('sha1').update(current_date + random + "2").digest('hex');
         } else {
             return crypto.createHash('sha1').update(current_date + random + "2").digest('hex').substr(0, length);
         }
     }
     var issueNewLicense = function (wwwSite, product_id, next) {
-        var newLicense = new License.model({
-            clientID: genkey(8),
-            siteURL: wwwSite,
-            product: new ObjectId(product_id),
-            createdAt: new Date().now(),
-            expire: new Date().now(),
-            brandingRemoval: false,
-            demoDisplay: true,
-            useExpiration: new Date().now(),
-            licenseStatusLive: true,
-            key: genkey(-1),
-            licenseHash: genkey(-1),
-            checked: new Date().now()
-        });
-        newLicense.save(function (err) {
-            if (err) {
-                console.log('[api.app.reg]  - Error saving new license.', err);
+            var newLicense = new License.model({
+                clientID: genkey(8),
+                siteURL: wwwSite,
+                product: new ObjectId(product_id),
+                createdAt: new Date(),
+                expire: new Date(),
+                brandingRemoval: false,
+                demoDisplay: true,
+                useExpiration: false,
+                licenseStatusLive: true,
+                key: genkey(-1),
+                licenseHash: genkey(-1),
+                checked: new Date()
+            });
+            newLicense.save(function (err) {
+                if (err) {
+                    console.log('[api.app.reg]  - Error saving new license.', err);
+                    console.log('------------------------------------------------------------');
+                    return next({message: 'Sorry, there was an error processing your account, please try again.'});
+                }
+                console.log('[api.app.reg]  - Saved new license registration.');
                 console.log('------------------------------------------------------------');
-                return next({message: 'Sorry, there was an error processing your account, please try again.'});
-            }
-            console.log('[api.app.reg]  - Saved new license registration.');
-            console.log('------------------------------------------------------------');
-        });
-        return newLicense;
-    }
-    /**
-     * async method run business logic
-     */
-    async.series([
-
-        function (next) {
-            try {
-                Q = input_checker(req.query, ['domain', 'product_key']);
-                next();
-            } catch (e) {
-                return next({message: e.message});
-            }
+            });
+            return newLicense;
         },
-
-        function (next) {
-
+        findProduct = function (product_id, next) {
             Product.model.findOne()
-                .where('_id', Q.product_key)
+                .where('_id', product_id)
                 .exec(function (err, data) {
 
                     if (err) {
@@ -110,18 +96,16 @@ exports = module.exports = function (req, res) {
 
                     product = _.extend(product, data._doc);
                     local.product = data;
-
+                    console.log('[api.app.reg]  - Product  found...');
+                    console.log('------------------------------------------------------------');
                     return next();
                 });
 
-
         },
-
-        function (next) {
-
+        licenseFind = function (product_id, site_url, next) {
             License.model.findOne()
-                .where('_id', new ObjectId(product._id))
-                .where('siteURL', Q.domain)
+                .where('product', product_id)
+                .where('siteURL', site_url)
                 .exec(function (err, data) {
 
                     if (err) {
@@ -133,16 +117,54 @@ exports = module.exports = function (req, res) {
                     if (!data) {
                         console.log('[api.app.reg]  - License not found...');
                         console.log('------------------------------------------------------------');
-                        local.license = issueNewLicense(Q.domain, Q.product_key, next);
+                        local.license = issueNewLicense(site_url, product_id, next);
                         license = _.extend(license, local.license._doc);
+                        local.newissue = true;
                     } else {
                         license = _.extend(license, data._doc);
                         local.license = data;
+                        local.newissue = false;
                     }
 
                     return next();
                 });
+        };
+    /**
+     * async method run business logic
+     */
+    async.series([
+        function (next) {
+            try {
+                Q = input_checker(req.query, ['domain', 'product_key']);
+                next();
+            } catch (e) {
+                return next({message: e.message});
+            }
         },
+        function (next) {
+            findProduct(Q.product_key, next);
+        },
+        function (next) {
+            licenseFind(product._id, Q.domain, next);
+        },
+        function (next) {
+            if (!local.newissue) {
+                var time = new Date();
+                local.license.checked = time.getTime();
+                local.license.save(function (err, doc) {
+                    if (err) {
+                        return next({message: e.message});
+                    }
+                    if (doc) {
+                        license = _.extend(license, doc._doc);
+                        return next();
+                    }
+                });
+            } else {
+                next();
+            }
+        },
+
         function (next) {
             return res.apiResponse({
                 success: true,
