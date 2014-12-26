@@ -19,7 +19,6 @@ Country.add({
         image: { type: Types.CloudinaryImage }
     }
 );
-Country.relationship({ ref: 'Printer', path: 'countries' });
 
 
 Country.register();

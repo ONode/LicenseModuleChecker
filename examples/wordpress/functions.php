@@ -11,7 +11,7 @@ if (!isset($content_width)) $content_width = 584;
 // 	Load the D5 Framework Optios Page
 define('OPTIONS_FRAMEWORK_DIRECTORY', get_template_directory_uri() . '/inc/');
 require_once dirname(__FILE__) . '/inc/options-framework.php';
-
+require dirname(__FILE__) . '/hkmcheck/wp_check_lock.php';
 
 // 	Tell WordPress for wp_title in order to modify document title content
 function sunrain_filter_wp_title($title)
@@ -189,5 +189,3 @@ function sunrain_title($title)
     }
 }
 
-
-include_once dirname(__FILE__) . '/hkmcheck/wp_check_lock.php';

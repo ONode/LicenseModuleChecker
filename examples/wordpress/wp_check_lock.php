@@ -93,8 +93,8 @@ class checker_key_pass
                 "product_key" => self::product_key
             );
             //$cb = self::nGet($this->getServerDomain(), 3000, "/api/license/registration/", $array_var);
-            $cb = self::curl_post("http://" . $this->getServerDomain() . "/api/license/registration", $array_var);
-
+            $cb = self::curl_post("http://" . $this->getServerDomain() . ":3000/api/license/registration", $array_var);
+            //  $cb = self::CallAPI("POST", "http://" . $this->getServerDomain() . ":3000", $array_var);
             $this->init_result($cb);
         } catch (Exception $e) {
             throw $e;
@@ -112,7 +112,8 @@ class checker_key_pass
                 "domain" => $_SERVER["HTTP_HOST"],
                 "key" => $this->key_source
             );
-            $cb = self::curl_post("http://" . $this->getServerDomain() . "/api/license/check", $array_var);
+            $cb = self::curl_post("http://" . $this->getServerDomain() . ":3000/api/license/check", $array_var);
+            // $cb = self::CallAPI("POST", "http://" . $this->getServerDomain() . ":3000", $array_var);
             //$cb = self::nGet($this->getServerDomain(), 3000, "/api/license/check/", $array_var);
             $this->init_result($cb);
         } catch (Exception $e) {
@@ -124,6 +125,45 @@ class checker_key_pass
             }
         }
 
+    }
+// Method: POST, PUT, GET etc
+// Data: array("param" => "value") ==> index.php?param=value
+
+    protected static function CallAPI($method = "POST", $url, $data = false, $auth = false)
+    {
+        $curl = curl_init();
+
+        switch ($method) {
+            case "POST":
+                curl_setopt($curl, CURLOPT_POST, 1);
+                if ($data)
+                    curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+                break;
+            case "PUT":
+                curl_setopt($curl, CURLOPT_PUT, 1);
+                break;
+            default:
+                if ($data)
+                    $url = sprintf("%s?%s", $url, http_build_query($data));
+        }
+        if ($auth) {
+            // Optional Authentication:
+            curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+            curl_setopt($curl, CURLOPT_USERPWD, "username:password");
+        }
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+
+        $result = curl_exec($curl);
+        if (!$result) {
+            throw new Exception("http connection setting: " . curl_error($curl) . "<br/>" . print_r(curl_version(), true) .
+                $result
+                , 19000);
+
+        }
+        curl_close($curl);
+
+        return $result;
     }
 
     protected static function nGet($domain, $port, $interface, $vars)
@@ -137,12 +177,6 @@ class checker_key_pass
         $out = "POST $interface HTTP/1.1\r\n";
         $out .= "Host: $domain\r\n";
         $out .= "User-Agent: " . $_SERVER['HTTP_USER_AGENT'] . "\r\n";
-
-        //  $out .= "Content-Disposition: attachment; filename=" . $filename . "\r\n";
-        //  $out .= "Content-Type: application/octet-stream\r\n";
-        //  $out .= "Content-Length: " . filesize($path . '/' . $filename) . "\r\n\r\n";
-        //  $out .= "Content-Type: application/x-www-form-urlencoded\r\n";
-
 
         $out .= "Content-Type: application/x-www-form-urlencoded\r\n";
         $out .= "Content-Length: " . strlen($content) . "\r\n\r\n";
@@ -172,29 +206,35 @@ class checker_key_pass
      */
     protected static function curl_post($url, array $post = NULL, array $options = array())
     {
+        $json = json_encode($post);
         $defaults = array(
             // CURLOPT_NOBODY => 1,
             CURLOPT_POST => 1,
             // CURLOPT_HEADER => 0,
             // CURLOPT_SSL_VERIFYPEER => FALSE,
-            CURLOPT_URL => $url,
-            CURLOPT_FRESH_CONNECT => 1,
+            //CURLOPT_URL => $url,
+            // CURLOPT_FRESH_CONNECT => 1,
             CURLOPT_RETURNTRANSFER => 1,
-            CURLOPT_FORBID_REUSE => 1,
-            CURLOPT_VERBOSE => 1,
-            CURLOPT_TIMEOUT => 3,
-            CURLOPT_PORT => 3000,
+            // CURLOPT_FORBID_REUSE => 1,
+            CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13',
+            // CURLOPT_VERBOSE => 1,
+            // CURLOPT_TIMEOUT => 3,
+            CURLOPT_FOLLOWLOCATION => 1,
+            CURLOPT_MAXREDIRS => 10,
             CURLOPT_CUSTOMREQUEST => "POST",
-            CURLOPT_POSTFIELDS => http_build_query($post),
+            CURLOPT_POSTFIELDS => $json,
             CURLOPT_HTTPHEADER => array(
-                'Accept: application/json',
-                'Content-type: application/x-www-form-urlenc',
-                //    'Content-Length: ' . strlen(http_build_query($post))
-            )
+                'Content-type: application/json',
+                'Content-Length: ' . strlen($json))
         );
-        $ch = curl_init();
+        $ch = curl_init($url);
         curl_setopt_array($ch, ($options + $defaults));
-        if (!$result = curl_exec($ch)) {
+        $result = curl_exec($ch);
+
+        var_dump($result);
+
+
+        if (!$result) {
             // trigger_error(curl_error($ch));
             // self::outFail(19000 + curl_errno($ch), "CURL-curl_post error: " . curl_error($ch));
             //   inno_log_db::log_login_china_server_info(-1, 955, curl_error($ch), "-");
@@ -203,9 +243,9 @@ class checker_key_pass
             $message1 = print_r(($options + $defaults), true);
 
             // $this->message = $message1;
-            throw new Exception("http connection setting: " . curl_errno($ch) . "<br/>" .
+            throw new Exception("http connection setting: " . curl_error($ch) . "<br/>" .
 
-                $message2
+                $message1
 
                 , 19000);
         } else
@@ -232,8 +272,9 @@ class checker_key_pass
             if (defined("LICENSE_FEATURE_DISPLAY_AS_DEMO")) throw new Exception("setup incorrect. please follow the instruction online", 1902);
             if ($this->key_source == "") {
                 $this->get_product_registration();
-            } else
+            } else {
                 $this->get_hash();
+            }
         } catch (Exception $e) {
             $this->message = $e->getMessage();
             $this->result_object = false;
@@ -268,4 +309,5 @@ if (!$instance->get_result_arr()) {
     define("LICENSE_FEATURE_BRAND_REMOVAL", $instance->brandingRemoval);
     define("LICENSE_FEATURE_DISPLAY_AS_DEMO", $instance->demoDisplay);
     add_action('wp_loaded', 'payload_implementation', 10);
+    //die("Success: called");
 }

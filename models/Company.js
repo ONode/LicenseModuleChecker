@@ -20,5 +20,5 @@ Company.add({
         image: { type: Types.CloudinaryImage }
     }
 );
-Company.relationship({ ref: 'Printer', path: 'companies' });
+
 Company.register();

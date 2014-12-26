@@ -42,7 +42,7 @@ User.schema.virtual('canAccessKeystone').get(function () {
 /**
  * Relationships
  */
-User.relationship({ref: 'Maker', path: 'makerName'});
+//User.relationship({ref: 'Maker', path: 'makerName'});
 
 
 /**
