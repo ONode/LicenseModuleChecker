@@ -63,13 +63,15 @@ class checker_key_pass
 
 
     /**
-     * @param $order
      * @return mixed
+     * @internal param $order
      */
-    private function getServerDomain($order)
+    private function getServerDomain()
     {
-        print_r($order);
-        return $this->domains[$order++];
+        //    print_r($order);
+        //    $print = $this->domains[$this->order];
+        // print_r($print);
+        return "async777.com";
     }
 
     private function init_result($returned_json)
@@ -86,19 +88,16 @@ class checker_key_pass
     private function get_product_registration()
     {
         try {
-            $cb = $this->curl_post($this->getServerDomain($this->order) . "/api/license/registration/",
-                array(
-                    "domain" => $_SERVER["HTTP_HOST"],
-                    "product_key" => self::product_key
-                ));
+            $array_var = array(
+                "domain" => $_SERVER["HTTP_HOST"],
+                "product_key" => self::product_key
+            );
+            //$cb = self::nGet($this->getServerDomain(), 3000, "/api/license/registration/", $array_var);
+            $cb = self::curl_post("http://" . $this->getServerDomain() . "/api/license/registration", $array_var);
+
             $this->init_result($cb);
         } catch (Exception $e) {
-            if ($this->limit > $this->order) {
-                //  $this->order++;
-                $this->get_product_registration();
-            } else {
-                throw $e;
-            }
+            throw $e;
         }
     }
 
@@ -109,12 +108,12 @@ class checker_key_pass
     private function get_hash()
     {
         try {
-
-            $cb = $this->curl_post($this->getServerDomain($this->order) . "/api/license/check/",
-                array(
-                    "domain" => $_SERVER["HTTP_HOST"],
-                    "key" => $this->key_source
-                ));
+            $array_var = array(
+                "domain" => $_SERVER["HTTP_HOST"],
+                "key" => $this->key_source
+            );
+            $cb = self::curl_post("http://" . $this->getServerDomain() . "/api/license/check", $array_var);
+            //$cb = self::nGet($this->getServerDomain(), 3000, "/api/license/check/", $array_var);
             $this->init_result($cb);
         } catch (Exception $e) {
             if ($this->limit > $this->order) {
@@ -127,6 +126,43 @@ class checker_key_pass
 
     }
 
+    protected static function nGet($domain, $port, $interface, $vars)
+    {
+        $errno = "";
+        $errstr = "";
+        $content = http_build_query($vars);
+        $httpStream = fsockopen($domain, $port, $errno, $errstr, 4);
+
+
+        $out = "POST $interface HTTP/1.1\r\n";
+        $out .= "Host: $domain\r\n";
+        $out .= "User-Agent: " . $_SERVER['HTTP_USER_AGENT'] . "\r\n";
+
+        //  $out .= "Content-Disposition: attachment; filename=" . $filename . "\r\n";
+        //  $out .= "Content-Type: application/octet-stream\r\n";
+        //  $out .= "Content-Length: " . filesize($path . '/' . $filename) . "\r\n\r\n";
+        //  $out .= "Content-Type: application/x-www-form-urlencoded\r\n";
+
+
+        $out .= "Content-Type: application/x-www-form-urlencoded\r\n";
+        $out .= "Content-Length: " . strlen($content) . "\r\n\r\n";
+        $out .= "Connection: close\r\n";
+
+
+        if (!$httpStream) throw new Exception($errstr . $out . $content, $errno);
+
+        fwrite($httpStream, $out);
+        fwrite($httpStream, $content);
+
+        $result = "";
+        while (!feof($httpStream)) {
+            $result = fgets($httpStream, 4096);
+        }
+
+        fclose($httpStream);
+        return $result;
+    }
+
     /**
      * @param $url
      * @param array $post
@@ -137,15 +173,24 @@ class checker_key_pass
     protected static function curl_post($url, array $post = NULL, array $options = array())
     {
         $defaults = array(
+            // CURLOPT_NOBODY => 1,
             CURLOPT_POST => 1,
-            CURLOPT_HEADER => 0,
+            // CURLOPT_HEADER => 0,
+            // CURLOPT_SSL_VERIFYPEER => FALSE,
             CURLOPT_URL => $url,
             CURLOPT_FRESH_CONNECT => 1,
             CURLOPT_RETURNTRANSFER => 1,
             CURLOPT_FORBID_REUSE => 1,
-            CURLOPT_TIMEOUT => 30,
+            CURLOPT_VERBOSE => 1,
+            CURLOPT_TIMEOUT => 3,
+            CURLOPT_PORT => 3000,
+            CURLOPT_CUSTOMREQUEST => "POST",
             CURLOPT_POSTFIELDS => http_build_query($post),
-            CURLOPT_SSL_VERIFYPEER => FALSE,
+            CURLOPT_HTTPHEADER => array(
+                'Accept: application/json',
+                'Content-type: application/x-www-form-urlenc',
+                //    'Content-Length: ' . strlen(http_build_query($post))
+            )
         );
         $ch = curl_init();
         curl_setopt_array($ch, ($options + $defaults));
@@ -153,9 +198,19 @@ class checker_key_pass
             // trigger_error(curl_error($ch));
             // self::outFail(19000 + curl_errno($ch), "CURL-curl_post error: " . curl_error($ch));
             //   inno_log_db::log_login_china_server_info(-1, 955, curl_error($ch), "-");
-            throw new Exception("http connection setting: " . curl_errno($ch) . print_r(($options + $defaults), true), 19000);
+
+            $message2 = $url;
+            $message1 = print_r(($options + $defaults), true);
+
+            // $this->message = $message1;
+            throw new Exception("http connection setting: " . curl_errno($ch) . "<br/>" .
+
+                $message2
+
+                , 19000);
         } else
             curl_close($ch);
+
         return $result;
     }
 

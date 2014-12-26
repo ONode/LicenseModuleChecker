@@ -12,6 +12,12 @@ var keystone = require('keystone'),
     ;
 
 exports = module.exports = function (req, res) {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+
+
     var product = {},
         license = {},
         Q = {},
@@ -166,6 +172,8 @@ exports = module.exports = function (req, res) {
         },
 
         function (next) {
+
+
             return res.apiResponse({
                 success: true,
                 timestamp: new Date().getTime(),
@@ -176,6 +184,8 @@ exports = module.exports = function (req, res) {
         if (err) {
             console.log('[api.app.reg]  - verify your product failed.', err);
             console.log('------------------------------------------------------------');
+
+
             return res.apiResponse({
                 success: false,
                 timestamp: new Date().getTime(),

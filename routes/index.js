@@ -43,7 +43,7 @@ exports = module.exports = function (app) {
     // app.get('/ticket/:tid', routes.views.ticket);
     app.get('/gallery', routes.views.gallery);
     app.all('/contact', routes.views.contact);
-
+    app.post('/api/license/*', keystone.initAPI);
     app.get('/download/users', routes.download.users);
     app.post('/api/license/check', routes.L.check);
     app.post('/api/license/registration', routes.L.registration);
