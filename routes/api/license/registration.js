@@ -142,7 +142,11 @@ exports = module.exports = function (req, res) {
     async.series([
         function (next) {
             try {
-                Q = input_checker(req.query, ['domain', 'product_key']);
+                console.log('------------------------------------------------------------');
+                console.log(req.body);
+                console.log('------------------------------------------------------------');
+
+                Q = input_checker(req.body, ['domain', 'product_key']);
                 next();
             } catch (e) {
                 return next({message: e.message});

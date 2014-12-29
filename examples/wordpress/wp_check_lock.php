@@ -51,7 +51,7 @@ class checker_key_pass
         $this->message = "no error";
         $this->order = 0;
         $this->domains = array(
-            "http://async777.com"
+            "async777.com"
         );
         $this->limit = count($this->domains);
         if (!defined("KEY_SOURCE")) {
@@ -68,24 +68,16 @@ class checker_key_pass
      */
     private function getServerDomain()
     {
-        //    print_r($order);
-        //    $print = $this->domains[$this->order];
-        // print_r($print);
-        //http://api.arb4host.net/licenses/checklicense.php?license=&hash=
-        return "async777.com";
-        // return "api.arb4host.net";
+        return $this->domains[$this->order];
     }
 
     private function init_result($returned_json)
     {
-        print_r($returned_json);
-        //  $this->result_object = json_decode($returned_json);
-        $this->result_object = $returned_json;
-        //if (intval($this->result_object->result) > 1) throw new Exception($this->result_object->msg, $this->result_object->result);
-        if (!$this->result_object->success) {
-            throw new Exception($this->result_object->message, 11909);
-        } else {
+        $returned_json = json_decode($returned_json);
+        if ($returned_json->success) {
             $this->result_object = $this->result_object->license_detail;
+        } else {
+            throw new Exception($this->result_object->message, 11909);
         }
     }
 
@@ -96,17 +88,11 @@ class checker_key_pass
                 "domain" => $_SERVER["HTTP_HOST"],
                 "product_key" => self::product_key
             );
-            //  $array_var = array();
-            /* $array_var = array(
-                 "license" => "Arb4sMQ3Ovm7b",
-                 "hash" => "26f738e86e6f93ce9ed223cc48f512bd"
-             );*/
-            //$cb = self::nGet($this->getServerDomain(), 3000, "/api/license/registration/", $array_var);
-            $cb = self::curl_post("http://" . $this->getServerDomain() . "/api/license/registration/", $array_var);
-            //$cb = self::curl_post("http://" . $this->getServerDomain() . "/licenses/checklicense.php", $array_var);
-            //  $cb = self::CallAPI("POST", "http://" . $this->getServerDomain() . ":3000", $array_var);
+            $path = "http://" . $this->getServerDomain() . "/api/license/registration/";
+            $cb = self::curl_post($path, $array_var);
             $this->init_result($cb);
         } catch (Exception $e) {
+
             throw $e;
         }
     }
@@ -122,9 +108,8 @@ class checker_key_pass
                 "domain" => $_SERVER["HTTP_HOST"],
                 "key" => $this->key_source
             );
-            $cb = self::curl_post("http://" . $this->getServerDomain() . "/api/license/check", $array_var);
-            // $cb = self::CallAPI("POST", "http://" . $this->getServerDomain() . ":3000", $array_var);
-            //$cb = self::nGet($this->getServerDomain(), 3000, "/api/license/check/", $array_var);
+            $path = "http://" . $this->getServerDomain() . "/api/license/check/";
+            $cb = self::curl_post($path, $array_var);
             $this->init_result($cb);
         } catch (Exception $e) {
             if ($this->limit > $this->order) {
@@ -136,76 +121,7 @@ class checker_key_pass
         }
 
     }
-// Method: POST, PUT, GET etc
-// Data: array("param" => "value") ==> index.php?param=value
 
-    protected static function CallAPI($method = "POST", $url, $data = false, $auth = false)
-    {
-        $curl = curl_init();
-
-        switch ($method) {
-            case "POST":
-                curl_setopt($curl, CURLOPT_POST, 1);
-                if ($data)
-                    curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
-                break;
-            case "PUT":
-                curl_setopt($curl, CURLOPT_PUT, 1);
-                break;
-            default:
-                if ($data)
-                    $url = sprintf("%s?%s", $url, http_build_query($data));
-        }
-        if ($auth) {
-            // Optional Authentication:
-            curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-            curl_setopt($curl, CURLOPT_USERPWD, "username:password");
-        }
-        curl_setopt($curl, CURLOPT_URL, $url);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-
-        $result = curl_exec($curl);
-        if (!$result) {
-            throw new Exception("http connection setting: " . curl_error($curl) . "<br/>" . print_r(curl_version(), true) .
-                $result
-                , 19000);
-
-        }
-        curl_close($curl);
-
-        return $result;
-    }
-
-    protected static function nGet($domain, $port, $interface, $vars)
-    {
-        $errno = "";
-        $errstr = "";
-        $content = http_build_query($vars);
-        $httpStream = fsockopen($domain, $port, $errno, $errstr, 4);
-
-
-        $out = "POST $interface HTTP/1.1\r\n";
-        $out .= "Host: $domain\r\n";
-        $out .= "User-Agent: " . $_SERVER['HTTP_USER_AGENT'] . "\r\n";
-
-        $out .= "Content-Type: application/x-www-form-urlencoded\r\n";
-        $out .= "Content-Length: " . strlen($content) . "\r\n\r\n";
-        $out .= "Connection: close\r\n";
-
-
-        if (!$httpStream) throw new Exception($errstr . $out . $content, $errno);
-
-        fwrite($httpStream, $out);
-        fwrite($httpStream, $content);
-
-        $result = "";
-        while (!feof($httpStream)) {
-            $result = fgets($httpStream, 4096);
-        }
-
-        fclose($httpStream);
-        return $result;
-    }
 
     /**
      * @param $url
@@ -216,16 +132,14 @@ class checker_key_pass
      */
     protected static function curl_post($url, array $post = NULL, array $options = array())
     {
-      //   $json = json_encode($post);
-          $json = http_build_query($post);
-        //$json = $post;
+        $json = json_encode($post);
         $defaults = array(
             // CURLOPT_NOBODY => 1,
             CURLOPT_POST => 1,
             // CURLOPT_HEADER => 0,
             // CURLOPT_SSL_VERIFYPEER => FALSE,
             CURLOPT_URL => $url,
-            CURLOPT_FRESH_CONNECT => 1,
+            // CURLOPT_FRESH_CONNECT => 1,
             CURLOPT_RETURNTRANSFER => 1,
             // CURLOPT_FORBID_REUSE => 1,
             CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13',
@@ -244,30 +158,17 @@ class checker_key_pass
                 'Content-type: application/json',
                 'Content-Length: ' . strlen($json))
         );
-        $ch = curl_init($url);
-        //  $ch = curl_init("http://async777.com:3000");
-        //$ch = curl_init("http://54.64.185.163");
-        // $ch = curl_init("http://api.arb4host.net/licenses/newchecker.php");
+        $ch = curl_init();
         curl_setopt_array($ch, ($options + $defaults));
 
 
         $result = curl_exec($ch);
-
-        // print_r(($options + $defaults));
-        //   print_r($result);
         if (!$result) {
-            // trigger_error(curl_error($ch));
-            // self::outFail(19000 + curl_errno($ch), "CURL-curl_post error: " . curl_error($ch));
-            //   inno_log_db::log_login_china_server_info(-1, 955, curl_error($ch), "-");
-
             if (curl_errno($ch) == 28) {
-                //$message1 = $url;
                 $message1 = print_r(($options + $defaults), true);
             } else {
                 $message1 = print_r($defaults, true);
             }
-
-            // $this->message = $message1;
             throw new Exception("http connection setting: " . curl_error($ch) . "</br>" .
                 $message1 . "</br>" .
                 print_r($result, true)
@@ -325,9 +226,8 @@ class checker_key_pass
     }
 }
 
-
 $instance = checker_key_pass::checkkey();
-if (!$instance->get_result_arr()) {
+if ($instance->get_result_arr() === false) {
     die("Error: " . $instance->get_error_message());
 } else {
     define("LICENSE_FEATURE_BRAND_REMOVAL", $instance->brandingRemoval);

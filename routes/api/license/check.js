@@ -48,6 +48,9 @@ exports = module.exports = function (req, res) {
     async.series([
         function (next) {
             try {
+                console.log('------------------------------------------------------------');
+                console.log(req.query);
+                console.log('------------------------------------------------------------');
                 Q = input_checker(req.query, ['domain', 'key']);
                 next();
             } catch (e) {
