@@ -26,27 +26,29 @@ var _ = require('underscore'),
 // Common Middleware
 keystone.pre('routes', middleware.initLocals);
 keystone.pre('render', middleware.flashMessages);
+//keystone.pre('api', middleware.flashMessages);
 
 // Import Route Controllers
 var routes = {
     views: importRoutes('./views'),
-    L: importRoutes('./api/license'),
     download: importRoutes('./download')
 };
-
+var api = {
+    license_processor: importRoutes('./api/license')
+}
 // Setup Route Bindings
 exports = module.exports = function (app) {
     // Views
     app.get('/', routes.views.index);
-    app.get('/register/machine/', routes.views.blog);
+    //  app.get('/register/machine/', routes.views.blog);
     //app.get('/blog/post/:post', routes.views.post);
     // app.get('/ticket/:tid', routes.views.ticket);
     app.get('/gallery', routes.views.gallery);
     app.all('/contact', routes.views.contact);
-    app.post('/api/license/*', keystone.initAPI);
+    app.all('/api/*', keystone.initAPI);
     app.get('/download/users', routes.download.users);
-    app.post('/api/license/check', routes.L.check);
-    app.post('/api/license/registration', routes.L.registration);
+    app.all('/api/license/check', api.license_processor.check);
+    app.all('/api/license/registration', api.license_processor.registration);
     // app.all('/api/me/register', routes.api.register); dsfsdf
     // NOTE: To protect a route so that only admins can see it, use the requireUser middleware:
     // app.get('/protected', middleware.requireUser, routes.views.protected);

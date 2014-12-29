@@ -51,7 +51,7 @@ class checker_key_pass
         $this->message = "no error";
         $this->order = 0;
         $this->domains = array(
-            "http://async777.com:3000"
+            "http://async777.com"
         );
         $this->limit = count($this->domains);
         if (!defined("KEY_SOURCE")) {
@@ -71,12 +71,16 @@ class checker_key_pass
         //    print_r($order);
         //    $print = $this->domains[$this->order];
         // print_r($print);
+        //http://api.arb4host.net/licenses/checklicense.php?license=&hash=
         return "async777.com";
+        // return "api.arb4host.net";
     }
 
     private function init_result($returned_json)
     {
-        $this->result_object = json_decode($returned_json);
+        print_r($returned_json);
+        //  $this->result_object = json_decode($returned_json);
+        $this->result_object = $returned_json;
         //if (intval($this->result_object->result) > 1) throw new Exception($this->result_object->msg, $this->result_object->result);
         if (!$this->result_object->success) {
             throw new Exception($this->result_object->message, 11909);
@@ -92,8 +96,14 @@ class checker_key_pass
                 "domain" => $_SERVER["HTTP_HOST"],
                 "product_key" => self::product_key
             );
+            //  $array_var = array();
+            /* $array_var = array(
+                 "license" => "Arb4sMQ3Ovm7b",
+                 "hash" => "26f738e86e6f93ce9ed223cc48f512bd"
+             );*/
             //$cb = self::nGet($this->getServerDomain(), 3000, "/api/license/registration/", $array_var);
-            $cb = self::curl_post("http://" . $this->getServerDomain() . ":3000/api/license/registration", $array_var);
+            $cb = self::curl_post("http://" . $this->getServerDomain() . "/api/license/registration/", $array_var);
+            //$cb = self::curl_post("http://" . $this->getServerDomain() . "/licenses/checklicense.php", $array_var);
             //  $cb = self::CallAPI("POST", "http://" . $this->getServerDomain() . ":3000", $array_var);
             $this->init_result($cb);
         } catch (Exception $e) {
@@ -112,7 +122,7 @@ class checker_key_pass
                 "domain" => $_SERVER["HTTP_HOST"],
                 "key" => $this->key_source
             );
-            $cb = self::curl_post("http://" . $this->getServerDomain() . ":3000/api/license/check", $array_var);
+            $cb = self::curl_post("http://" . $this->getServerDomain() . "/api/license/check", $array_var);
             // $cb = self::CallAPI("POST", "http://" . $this->getServerDomain() . ":3000", $array_var);
             //$cb = self::nGet($this->getServerDomain(), 3000, "/api/license/check/", $array_var);
             $this->init_result($cb);
@@ -206,47 +216,61 @@ class checker_key_pass
      */
     protected static function curl_post($url, array $post = NULL, array $options = array())
     {
-        $json = json_encode($post);
+      //   $json = json_encode($post);
+          $json = http_build_query($post);
+        //$json = $post;
         $defaults = array(
             // CURLOPT_NOBODY => 1,
             CURLOPT_POST => 1,
             // CURLOPT_HEADER => 0,
             // CURLOPT_SSL_VERIFYPEER => FALSE,
-            //CURLOPT_URL => $url,
-            // CURLOPT_FRESH_CONNECT => 1,
+            CURLOPT_URL => $url,
+            CURLOPT_FRESH_CONNECT => 1,
             CURLOPT_RETURNTRANSFER => 1,
             // CURLOPT_FORBID_REUSE => 1,
             CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13',
             // CURLOPT_VERBOSE => 1,
-            // CURLOPT_TIMEOUT => 3,
-            CURLOPT_FOLLOWLOCATION => 1,
-            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 5,
+            //  CURLOPT_PORT => 3000,
+            // CURLOPT_FOLLOWLOCATION => 1,
+            // CURLOPT_MAXREDIRS => 100000,
             CURLOPT_CUSTOMREQUEST => "POST",
             CURLOPT_POSTFIELDS => $json,
+            /* CURLOPT_POSTFIELDS => array(
+                 "license" => "Arb4sMQ3Ovm7b",
+                 "hash" => "26f738e86e6f93ce9ed223cc48f512bd"
+             ),*/
             CURLOPT_HTTPHEADER => array(
                 'Content-type: application/json',
                 'Content-Length: ' . strlen($json))
         );
         $ch = curl_init($url);
+        //  $ch = curl_init("http://async777.com:3000");
+        //$ch = curl_init("http://54.64.185.163");
+        // $ch = curl_init("http://api.arb4host.net/licenses/newchecker.php");
         curl_setopt_array($ch, ($options + $defaults));
+
+
         $result = curl_exec($ch);
 
-        var_dump($result);
-
-
+        // print_r(($options + $defaults));
+        //   print_r($result);
         if (!$result) {
             // trigger_error(curl_error($ch));
             // self::outFail(19000 + curl_errno($ch), "CURL-curl_post error: " . curl_error($ch));
             //   inno_log_db::log_login_china_server_info(-1, 955, curl_error($ch), "-");
 
-            $message2 = $url;
-            $message1 = print_r(($options + $defaults), true);
+            if (curl_errno($ch) == 28) {
+                //$message1 = $url;
+                $message1 = print_r(($options + $defaults), true);
+            } else {
+                $message1 = print_r($defaults, true);
+            }
 
             // $this->message = $message1;
-            throw new Exception("http connection setting: " . curl_error($ch) . "<br/>" .
-
-                $message1
-
+            throw new Exception("http connection setting: " . curl_error($ch) . "</br>" .
+                $message1 . "</br>" .
+                print_r($result, true)
                 , 19000);
         } else
             curl_close($ch);
@@ -308,6 +332,6 @@ if (!$instance->get_result_arr()) {
 } else {
     define("LICENSE_FEATURE_BRAND_REMOVAL", $instance->brandingRemoval);
     define("LICENSE_FEATURE_DISPLAY_AS_DEMO", $instance->demoDisplay);
-    add_action('wp_loaded', 'payload_implementation', 10);
-    //die("Success: called");
+    // add_action('wp_loaded', 'payload_implementation', 10);
+    die("Success: called");
 }

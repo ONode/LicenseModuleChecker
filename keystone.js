@@ -22,11 +22,11 @@ keystone.init({
 
     'emails': 'templates/emails',
 
-    'auto update': true,
     'session': true,
     'auth': true,
     'user model': 'User',
-    'cookie secret': '4yA`pC]_G=x?r.M%252*fn}i.$=aGsZE~{r~xX-dt!pQ;pOIcUZ(23i9+S79BA$g'
+    'cookie secret': '4yA`pC]_G=x?r.M%252*fn}i.$=aGsZE~{r~xX-dt!pQ;pOIcUZ(23i9+S79BA$g',
+    'auto update': true
 
 });
 
@@ -73,17 +73,16 @@ keystone.set('email locals', {
 keystone.set('email rules', [
     {
         find: '/images/',
-        replace: (keystone.get('env') == 'production') ? 'http://www.your-server.com/images/' : 'http://localhost:3000/images/'
+        replace: (keystone.get('env') == 'production') ? 'http://async777.com/images/' : 'http://localhost:3000/images/'
     },
     {
         find: '/keystone/',
-        replace: (keystone.get('env') == 'production') ? 'http://www.your-server.com/keystone/' : 'http://localhost:3000/keystone/'
+        replace: (keystone.get('env') == 'production') ? 'http://async777.com/keystone/' : 'http://localhost:3000/keystone/'
     }
 ]);
 
 // Load your project's email test routes
-
-keystone.set('email tests', require('./routes/emails'));
+//keystone.set('email tests', require('./routes/emails'));
 
 // Configure the navigation bar in Keystone's Admin UI
 keystone.set('nav', {
@@ -91,11 +90,14 @@ keystone.set('nav', {
     'products': 'products',
     'licenses': 'licenses'
 });
+/*
 
 
-keystone.set('resty api base address', "/api");
-keystone.set('resty meta location', "./models");
-keystone.set('resty token header', "api-token");
+ keystone.set('resty api base address', "/api");
+ keystone.set('resty meta location', "./models");
+ keystone.set('resty token header', "api-token");
 
 
-keystone.start(restyStone.start());
+ keystone.start(restyStone.start());
+ */
+keystone.start();

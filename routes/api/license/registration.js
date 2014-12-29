@@ -12,10 +12,9 @@ var keystone = require('keystone'),
     ;
 
 exports = module.exports = function (req, res) {
-    res.header('Access-Control-Allow-Origin', '*');
+  /*  res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');*/
 
 
     var product = {},
@@ -61,7 +60,7 @@ exports = module.exports = function (req, res) {
             var newLicense = new License.model({
                 clientID: genkey(8),
                 siteURL: wwwSite,
-                product: new ObjectId(product_id),
+                product: new ObjectId(product_id.toString()),
                 createdAt: new Date(),
                 expire: new Date(),
                 brandingRemoval: false,
@@ -95,6 +94,7 @@ exports = module.exports = function (req, res) {
                     }
 
                     if (!data) {
+                        console.log('[api.app.reg] key:' + product_id);
                         console.log('[api.app.reg]  - Product not found...');
                         console.log('------------------------------------------------------------');
                         return next({message: 'Product not found'});
@@ -121,6 +121,7 @@ exports = module.exports = function (req, res) {
                     }
 
                     if (!data) {
+                        console.log('[api.app.reg] key:' + product_id);
                         console.log('[api.app.reg]  - License not found...');
                         console.log('------------------------------------------------------------');
                         local.license = issueNewLicense(site_url, product_id, next);
