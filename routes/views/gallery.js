@@ -10,7 +10,11 @@ exports = module.exports = function(req, res) {
 	
 	// Load the galleries by sortOrder
 	view.query('galleries', keystone.list('Gallery').model.find().sort('sortOrder'));
-	
+	//galleries = [
+	// ...{
+	//
+	// }
+	// ]
 	// Render the view
 	view.render('gallery');
 	

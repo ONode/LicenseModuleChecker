@@ -77,7 +77,7 @@ class checker_key_pass
         if ($returned_json->success) {
             $this->result_object = $this->result_object->license_detail;
         } else {
-            throw new Exception($this->result_object->message, 11909);
+            throw new Exception($returned_json->message, 11909);
         }
     }
 
@@ -233,5 +233,7 @@ if ($instance->get_result_arr() === false) {
     define("LICENSE_FEATURE_BRAND_REMOVAL", $instance->brandingRemoval);
     define("LICENSE_FEATURE_DISPLAY_AS_DEMO", $instance->demoDisplay);
     // add_action('wp_loaded', 'payload_implementation', 10);
+
+
     die("Success: called");
 }

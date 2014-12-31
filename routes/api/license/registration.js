@@ -12,9 +12,9 @@ var keystone = require('keystone'),
     ;
 
 exports = module.exports = function (req, res) {
-  /*  res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');*/
+    /*  res.header('Access-Control-Allow-Origin', '*');
+     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');*/
 
 
     var product = {},
@@ -128,9 +128,13 @@ exports = module.exports = function (req, res) {
                         license = _.extend(license, local.license._doc);
                         local.newissue = true;
                     } else {
+                        console.log('[api.app.reg]  - License found...');
+
                         license = _.extend(license, data._doc);
                         local.license = data;
                         local.newissue = false;
+                  //      console.log(license);
+                   //     console.log('[api.app.reg]  - ...');
                     }
 
                     return next();
@@ -145,7 +149,6 @@ exports = module.exports = function (req, res) {
                 console.log('------------------------------------------------------------');
                 console.log(req.body);
                 console.log('------------------------------------------------------------');
-
                 Q = input_checker(req.body, ['domain', 'product_key']);
                 next();
             } catch (e) {
@@ -167,18 +170,29 @@ exports = module.exports = function (req, res) {
                         return next({message: e.message});
                     }
                     if (doc) {
+
+                        console.log('------------------------------------------------------------');
+                        console.log('update license time check');
+                     //   console.log('----------------------------------------------------------');
+                     //   console.log('---License before-----------------------------------------');
+                     //   console.log(license);
+                     //   console.log('----------------------------------------------------------');
                         license = _.extend(license, doc._doc);
-                        return next();
+                        console.log('---License after--------------------------------------------');
+                        console.log(license);
+                        console.log('------------------------------------------------------------');
+                        if (!license.licenseStatusLive) {
+                            return next({message: "license is suspended."});
+                        } else
+                            return next();
                     }
                 });
+
             } else {
                 next();
             }
         },
-
         function (next) {
-
-
             return res.apiResponse({
                 success: true,
                 timestamp: new Date().getTime(),
@@ -189,7 +203,6 @@ exports = module.exports = function (req, res) {
         if (err) {
             console.log('[api.app.reg]  - verify your product failed.', err);
             console.log('------------------------------------------------------------');
-
 
             return res.apiResponse({
                 success: false,

@@ -19,7 +19,8 @@ var h2 = crypto.createHash('sha1').update(current_date + random + "1").digest('h
 
 Product.add({
         name: {type: String, required: true, initial: true},
-        publishedDate: {type: Types.Date, noedit: true}
+        publishedDate: {type: Types.Date, noedit: true},
+        issuer: {type: Types.Relationship, ref: 'User', label: "Issued and Created By"}
     },
     'Inventory', {
         limitEdition: {type: Boolean, default: false},
