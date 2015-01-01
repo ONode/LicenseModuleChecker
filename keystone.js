@@ -63,7 +63,7 @@ keystone.set('email locals', {
         }
     }
 });
-
+keystone.set('cors allow origin', true);
 // Setup replacement rules for emails, to automate the handling of differences
 // between development a production.
 
@@ -90,14 +90,11 @@ keystone.set('nav', {
     'products': 'products',
     'licenses': 'licenses'
 });
-/*
 
 
- keystone.set('resty api base address', "/api");
- keystone.set('resty meta location', "./models");
- keystone.set('resty token header', "api-token");
+keystone.set('resty api base address', "/api");
+keystone.set('resty meta location', "./models");
+keystone.set('resty token header', "api-token");
+keystone.start(restyStone.start());
 
-
- keystone.start(restyStone.start());
- */
-keystone.start();
+//keystone.start();
