@@ -6,7 +6,7 @@ var keystone = require('keystone'),
  * ==========
  */
 
-var User = new keystone.List('User');
+var User = new keystone.List('User', {roles: ['Administrator']});
 
 User.add({
     name: {type: Types.Name, required: true, index: true},
@@ -31,9 +31,10 @@ User.add({
         default: 'enabled'
     },
     isVerified: {type: Boolean, label: 'Account Verification'},
-    isAdmin: {type: Boolean, label: 'Can access Keystone', index: true}
+    isAdmin: {type: Boolean, label: 'Can access Keystone', index: true},
+    roles: {type: Types.Relationship, ref: 'Role', many: true, initial: true, default: ['Member']}
 });
-
+User.relationship({ref: 'Product', path: 'issuer'});
 // Provide access to Keystone
 User.schema.virtual('canAccessKeystone').get(function () {
     return this.isAdmin;
@@ -48,5 +49,5 @@ User.schema.virtual('canAccessKeystone').get(function () {
 /**
  * Registration
  */
-User.defaultColumns = 'name, email, isAdmin';
+User.defaultColumns = 'name, email, roles';
 User.register();
