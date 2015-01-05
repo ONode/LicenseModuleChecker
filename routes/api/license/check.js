@@ -49,9 +49,9 @@ exports = module.exports = function (req, res) {
         function (next) {
             try {
                 console.log('------------------------------------------------------------');
-                console.log(req.query);
+                console.log(req.body);
                 console.log('------------------------------------------------------------');
-                Q = input_checker(req.query, ['domain', 'key']);
+                Q = input_checker(req.body, ['domain', 'key']);
                 next();
             } catch (e) {
                 return next({message: e.message});
