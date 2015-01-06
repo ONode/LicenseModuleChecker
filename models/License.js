@@ -23,7 +23,7 @@ License.add({
     product: {type: Types.Relationship, ref: 'Product', label: "Licensed Product"},
     createdAt: {type: Date, default: Date.now, noedit: true, label: "Issue Date"},
     checked: {type: Date, default: Date.now, noedit: true, label: "Checked Time"},
-    expire: {type: Date, default: new Date(), label: "Product Expiration"}
+    expire: {type: Date, default: new Date(), label: "Product Expiration / End of Updates"}
 }, 'DRM protection implementation', {
     brandingRemoval: {type: Types.Boolean, default: false},
     demoDisplay: {type: Types.Boolean, default: true},

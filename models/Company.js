@@ -12,6 +12,7 @@ var keystone = require('keystone'),
 var Company = new keystone.List('Company', {
     autokey: { from: 'name', path: 'key', unique: true }
 });
+
 Company.add({
         name: { type: String },
         url: { type: Types.Url }
