@@ -19,6 +19,7 @@
     "passport-google-oauth": "^0.1.5",
     "passport-twitter": "^1.0.2",
     "request": "^2.34.0",
+    "check-update": "^0.0.5",
     "csv": "0.3.6"
   },
   "devDependencies": {

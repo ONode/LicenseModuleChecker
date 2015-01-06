@@ -5,14 +5,13 @@ var keystone = require('keystone'),
     async = require('async'),
     _ = require('underscore'),
     License = keystone.list('License'),
-    utils = require('keystone-utils');
-
+    utils = require('keystone-utils'),
+    checkUpdate = require('check-update');
 exports = module.exports = function (req, res) {
 
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
 
 
     var license = {
@@ -52,6 +51,18 @@ exports = module.exports = function (req, res) {
                 console.log(req.body);
                 console.log('------------------------------------------------------------');
                 Q = input_checker(req.body, ['domain', 'key']);
+                if (req.body['version']) {
+                    Q.version = req.body['version'];
+                  /*  checkUpdate({
+                        packageName: Q.domain,
+                        packageVersion: Q.version,
+                        isCLI: false
+                    }, function (err, latestVersion, defaultMessage) {
+                        if (!err) {
+                            console.log(defaultMessage);
+                        }
+                    });*/
+                }
                 next();
             } catch (e) {
                 return next({message: e.message});
@@ -130,7 +141,6 @@ exports = module.exports = function (req, res) {
         function (next) {
 
 
-
             return res.apiResponse({
                 success: true,
                 timestamp: new Date().getTime(),
@@ -141,8 +151,6 @@ exports = module.exports = function (req, res) {
         if (err) {
             console.log('[api.app.checklicense]  - verify your license failed.', err);
             console.log('------------------------------------------------------------');
-
-
 
             return res.apiResponse({
                 success: false,
