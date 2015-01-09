@@ -1,4 +1,4 @@
-LicenseModuleChecker
+LicenseModuleChecker [![Code Climate](https://codeclimate.com/github/jjhesk/LicenseModuleChecker/badges/gpa.svg)](https://codeclimate.com/github/jjhesk/LicenseModuleChecker)
 ====================
 
 This is the module license checker from the next level from LL checker.
