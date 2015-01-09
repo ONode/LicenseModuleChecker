@@ -4,9 +4,10 @@
 var keystone = require('keystone'),
     async = require('async'),
     _ = require('underscore'),
+    Product = keystone.list('Product'),
     License = keystone.list('License'),
     utils = require('keystone-utils'),
-    checkUpdate = require('check-update');
+    checkUpdate = require('hkm-simple-vercheck');
 exports = module.exports = function (req, res) {
 
     res.header('Access-Control-Allow-Origin', '*');
@@ -27,7 +28,14 @@ exports = module.exports = function (req, res) {
         isError = false,
         message = "",
         Q = {},
-        local = {handle: false};
+        local = {
+            handle: false,
+            product: false,
+            version: {
+                latest: false,
+                message: false
+            }
+        };
 
     /**
      *
@@ -36,11 +44,42 @@ exports = module.exports = function (req, res) {
      * @returns {*}
      */
     var input_checker = function (Query, checkArr) {
-        _.each(checkArr, function (paramname) {
-            if (!Query[paramname]) throw Error(paramname + " is missing.");
-        });
-        return Query;
-    }
+            _.each(checkArr, function (paramname) {
+                if (!Query[paramname]) throw Error(paramname + " is missing.");
+            });
+            return Query;
+        },
+        findProduct = function (product_id, version_reported, next) {
+            Product.model.findOne()
+                .where('_id', product_id)
+                .exec(function (err, data) {
+
+                    if (err) {
+                        console.log('[api.app.reg]  - First Line Error...');
+                        console.log('------------------------------------------------------------');
+                        return next({message: err.message});
+                    }
+
+                    if (!data) {
+                        console.log('[api.app.reg] key:' + product_id);
+                        console.log('[api.app.reg]  - Product not found...');
+                        console.log('------------------------------------------------------------');
+                        return next({message: 'Product not found'});
+                    }
+
+                    local.product = _.extend(product, data._doc);
+
+                    console.log('[api.app.reg]  - Product  found...');
+                    console.log('--------do checking in here-----------------');
+                    var m = new checkUpdate(local.product.ver, version_reported);
+                    local.version.latest = local.product.ver;
+                    local.version.message = m.getMessage();
+                    //    local.version.recommandation =
+
+                    return next();
+                });
+
+        };
     /**
      * async method run business logic
      */
@@ -53,15 +92,17 @@ exports = module.exports = function (req, res) {
                 Q = input_checker(req.body, ['domain', 'key']);
                 if (req.body['version']) {
                     Q.version = req.body['version'];
-                  /*  checkUpdate({
-                        packageName: Q.domain,
-                        packageVersion: Q.version,
-                        isCLI: false
-                    }, function (err, latestVersion, defaultMessage) {
-                        if (!err) {
-                            console.log(defaultMessage);
-                        }
-                    });*/
+
+
+                    /*  checkUpdate({
+                     packageName: Q.domain,
+                     packageVersion: Q.version,
+                     isCLI: false
+                     }, function (err, latestVersion, defaultMessage) {
+                     if (!err) {
+                     console.log(defaultMessage);
+                     }
+                     });*/
                 }
                 next();
             } catch (e) {
@@ -90,7 +131,7 @@ exports = module.exports = function (req, res) {
                         return next({message: 'license not found'});
                     }
 
-                    //   license = _.extend(data, license);
+                    // license = _.extend(data, license);
                     console.log('[api.app.checklicense]  - before ..', data);
                     console.log('------------------------------------------------------------');
                     license = _.extend(license, data._doc);
@@ -104,6 +145,9 @@ exports = module.exports = function (req, res) {
                     if (!license.licenseStatusLive)
                         return next({message: 'license is not alive'});
 
+                    if (Q.version) {
+                        findProduct(license._id, Q.version, next);
+                    }
                     return next();
                 });
 
