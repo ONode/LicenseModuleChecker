@@ -8,7 +8,7 @@ var keystone = require('keystone'),
     License = keystone.list('License'),
     utils = require('keystone-utils'),
     tool = require('../../../lib/handler/checker')
-  ;
+    ;
 exports = module.exports = function (req, res) {
 
     res.header('Access-Control-Allow-Origin', '*');
@@ -32,10 +32,7 @@ exports = module.exports = function (req, res) {
         local = {
             handle: false,
             product: false,
-            version: {
-                latest: false,
-                message: false
-            }
+            version: false
         };
 
     /**
