@@ -7,7 +7,8 @@ var keystone = require('keystone'),
     Product = keystone.list('Product'),
     License = keystone.list('License'),
     utils = require('keystone-utils'),
-    checkUpdate = require('hkm-simple-vercheck');
+    tool = require('../../../lib/handler/checker')
+  ;
 exports = module.exports = function (req, res) {
 
     res.header('Access-Control-Allow-Origin', '*');
@@ -43,43 +44,37 @@ exports = module.exports = function (req, res) {
      * @param checkArr
      * @returns {*}
      */
-    var input_checker = function (Query, checkArr) {
-            _.each(checkArr, function (paramname) {
-                if (!Query[paramname]) throw Error(paramname + " is missing.");
+    var findProduct = function (product_id, version_reported, next) {
+        Product.model.findOne()
+            .where('_id', product_id)
+            .exec(function (err, data) {
+
+                if (err) {
+                    console.log('[api.app.reg]  - First Line Error...');
+                    console.log('------------------------------------------------------------');
+                    return next({message: err.message});
+                }
+
+                if (!data) {
+                    console.log('[api.app.reg] key:' + product_id);
+                    console.log('[api.app.reg]  - Product not found...');
+                    console.log('------------------------------------------------------------');
+                    return next({message: 'Product not found'});
+                }
+
+                local.product = _.extend(product, data._doc);
+
+                console.log('[api.app.reg]  - Product  found...');
+                console.log('--------do checking in here-----------------');
+                if (local.product.ver) {
+                    var discovered_version = new tool.check_version(version_reported, local.product.ver);
+                    local.version = discovered_version;
+                }
+
+                return next();
             });
-            return Query;
-        },
-        findProduct = function (product_id, version_reported, next) {
-            Product.model.findOne()
-                .where('_id', product_id)
-                .exec(function (err, data) {
 
-                    if (err) {
-                        console.log('[api.app.reg]  - First Line Error...');
-                        console.log('------------------------------------------------------------');
-                        return next({message: err.message});
-                    }
-
-                    if (!data) {
-                        console.log('[api.app.reg] key:' + product_id);
-                        console.log('[api.app.reg]  - Product not found...');
-                        console.log('------------------------------------------------------------');
-                        return next({message: 'Product not found'});
-                    }
-
-                    local.product = _.extend(product, data._doc);
-
-                    console.log('[api.app.reg]  - Product  found...');
-                    console.log('--------do checking in here-----------------');
-                    var m = new checkUpdate(local.product.ver, version_reported);
-                    local.version.latest = local.product.ver;
-                    local.version.message = m.getMessage();
-                    //    local.version.recommandation =
-
-                    return next();
-                });
-
-        };
+    };
     /**
      * async method run business logic
      */
@@ -89,7 +84,7 @@ exports = module.exports = function (req, res) {
                 console.log('------------------------------------------------------------');
                 console.log(req.body);
                 console.log('------------------------------------------------------------');
-                Q = input_checker(req.body, ['domain', 'key']);
+                Q = tool.url_param_checker(req.body, ['domain', 'key']);
                 if (req.body['version']) {
                     Q.version = req.body['version'];
 

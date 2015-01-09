@@ -7,8 +7,8 @@ var keystone = require('keystone'),
     License = keystone.list('License'),
     Product = keystone.list('Product'),
     utils = require('keystone-utils'),
-    crypto = require('crypto'),
-    ObjectId = require('mongoose').Types.ObjectId
+    ObjectId = require('mongoose').Types.ObjectId,
+    tool = require('../../../lib/handler/checker')
     ;
 
 exports = module.exports = function (req, res) {
@@ -35,30 +35,11 @@ exports = module.exports = function (req, res) {
      };
 
      */
-    /**
-     *
-     * @param Query
-     * @param checkArr
-     * @returns {*}
-     */
-    var input_checker = function (Query, checkArr) {
-        _.each(checkArr, function (paramname) {
-            if (!Query[paramname]) throw Error(paramname + " is missing.");
-        });
-        return Query;
-    }
-    var genkey = function (length) {
-        var current_date = (new Date()).valueOf().toString();
-        var random = Math.random().toString();
-        if (length === -1) {
-            return crypto.createHash('sha1').update(current_date + random + "2").digest('hex');
-        } else {
-            return crypto.createHash('sha1').update(current_date + random + "2").digest('hex').substr(0, length);
-        }
-    }
+
+
     var issueNewLicense = function (wwwSite, product_id, next) {
             var newLicense = new License.model({
-                clientID: genkey(8),
+                clientID: tool.genkey(8),
                 siteURL: wwwSite,
                 product: new ObjectId(product_id.toString()),
                 createdAt: new Date(),
@@ -67,8 +48,8 @@ exports = module.exports = function (req, res) {
                 demoDisplay: true,
                 useExpiration: false,
                 licenseStatusLive: true,
-                key: genkey(-1),
-                licenseHash: genkey(-1),
+                key: tool.genkey(-1),
+                licenseHash: tool.genkey(-1),
                 checked: new Date()
             });
             newLicense.save(function (err) {
@@ -133,8 +114,8 @@ exports = module.exports = function (req, res) {
                         license = _.extend(license, data._doc);
                         local.license = data;
                         local.newissue = false;
-                  //      console.log(license);
-                   //     console.log('[api.app.reg]  - ...');
+                        //      console.log(license);
+                        //     console.log('[api.app.reg]  - ...');
                     }
 
                     return next();
@@ -149,7 +130,7 @@ exports = module.exports = function (req, res) {
                 console.log('------------------------------------------------------------');
                 console.log(req.body);
                 console.log('------------------------------------------------------------');
-                Q = input_checker(req.body, ['domain', 'product_key']);
+                Q = tool.url_param_checker(req.body, ['domain', 'product_key']);
                 next();
             } catch (e) {
                 return next({message: e.message});
@@ -173,10 +154,10 @@ exports = module.exports = function (req, res) {
 
                         console.log('------------------------------------------------------------');
                         console.log('update license time check');
-                     //   console.log('----------------------------------------------------------');
-                     //   console.log('---License before-----------------------------------------');
-                     //   console.log(license);
-                     //   console.log('----------------------------------------------------------');
+                        //   console.log('----------------------------------------------------------');
+                        //   console.log('---License before-----------------------------------------');
+                        //   console.log(license);
+                        //   console.log('----------------------------------------------------------');
                         license = _.extend(license, doc._doc);
                         console.log('---License after--------------------------------------------');
                         console.log(license);
