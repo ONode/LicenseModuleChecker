@@ -62,7 +62,7 @@ exports = module.exports = function (req, res) {
                 local.product = _.extend(product, data._doc);
 
                 console.log('[api.app.reg]  - Product  found...');
-                console.log('--------do checking in here-----------------');
+                console.log('--------do checking in here----------');
                 if (local.product.ver) {
                     var discovered_version = new tool.check_version(version_reported, local.product.ver);
                     local.version = discovered_version;
@@ -154,7 +154,7 @@ exports = module.exports = function (req, res) {
                 local.handle.save(function (err, doc) {
 
                     if (err) {
-                        return next({message: e.message});
+                        return next({message: err.message});
                     }
 
                     if (doc) {
